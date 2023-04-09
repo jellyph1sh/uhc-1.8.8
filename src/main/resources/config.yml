@@ -1,0 +1,7 @@
+worlds:
+  lobby: world
+  uhc: uhc
+start-game: 2
+border-limit: 500
+timers:
+  pvpactivate: 600

@@ -1,0 +1,11 @@
+name: uhc
+version: "Beta"
+author: JellyPhish
+main: fr.dpocean.UHCPlugin
+commands:
+  uhcstart:
+    description: Start the UHC
+    usage: /<command>
+  uhcstop:
+    description: Stop the UHC
+    usage: /<command>
