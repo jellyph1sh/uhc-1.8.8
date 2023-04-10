@@ -23,7 +23,7 @@ public class UHCScheduler {
     public void pvpScheduler() {
         new PVPTask(plugin).runTaskTimer(plugin, 0, 20 * 60 * 5);
         new MessageTask(plugin, ChatColor.RED, "PVP start in 1 minute!").runTaskLater(plugin, 20 * 60 * 19);
-        new PVPSeconds(plugin).runTaskTimer(plugin, 20 * 60 * 19 + 20 * 49, 20);
+        new PVPSeconds(plugin).runTaskTimer(plugin, 20 * 60 * 19 + 20 * 50, 20);
         new WorldBorderTask(plugin).runTaskTimer(plugin, 20 * 60 * 20, 20);
     }
 
