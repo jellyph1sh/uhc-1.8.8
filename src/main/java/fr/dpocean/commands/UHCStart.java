@@ -1,5 +1,6 @@
 package fr.dpocean.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -22,11 +23,11 @@ public class UHCStart implements CommandExecutor {
                 if (plugin.restartTask != null) {
                     plugin.restartTask.cancel();
                     plugin.restartTask = null;
-                    player.sendMessage("The automatic game start has been cancel!");
+                    player.sendMessage(plugin.messagePrefix + ChatColor.GREEN + "The automatic game start has been cancel!");
                 }
                 plugin.startGame();
             } else {
-                player.sendMessage("A game is already in current!");
+                player.sendMessage(plugin.messagePrefix + ChatColor.RED + "A game is already in current!");
             }
         }
 

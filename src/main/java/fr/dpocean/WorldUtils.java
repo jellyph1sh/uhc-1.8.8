@@ -19,22 +19,23 @@ public class WorldUtils {
         return wc.createWorld();
     }
 
-    public static void setWorldBorderSettings(World world, int limit) {
+    public static void setWorldBorderParameters(World world, int limit) {
         WorldBorder wb = world.getWorldBorder();
         wb.setSize(limit);
     }
 
-    public static void setLobbySettings(World lobby) {
+    public static void setLobbyWorldParameters(World lobby) {
         lobby.setAmbientSpawnLimit(0);
         lobby.setAnimalSpawnLimit(0);
         lobby.setDifficulty(Difficulty.PEACEFUL);
         lobby.setMonsterSpawnLimit(0);
         lobby.setPVP(false);
+        lobby.setStorm(false);
         lobby.setGameRuleValue("doDaylightCycle", "false");
         lobby.setGameRuleValue("doWeatherCycle", "false");
     }
 
-    public static void setUHCWorldSettings(World uhc) {
+    public static void setUHCWorldParameters(World uhc) {
         uhc.setAmbientSpawnLimit(0);
         uhc.setDifficulty(Difficulty.HARD);
         uhc.setMonsterSpawnLimit(0);

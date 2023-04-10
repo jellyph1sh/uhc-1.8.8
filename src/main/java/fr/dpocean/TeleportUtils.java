@@ -63,7 +63,7 @@ public class TeleportUtils {
             z = random.nextInt(limit/2-1);
             randomLocation = new Location(world, x, y, z);
 
-            randomLocation.setY(randomLocation.getWorld().getHighestBlockYAt(randomLocation));
+            randomLocation.setY(randomLocation.getWorld().getHighestBlockYAt(randomLocation) + 3);
         }
 
         return randomLocation;

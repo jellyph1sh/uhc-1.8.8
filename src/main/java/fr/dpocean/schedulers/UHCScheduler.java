@@ -2,14 +2,15 @@ package fr.dpocean.schedulers;
 
 import java.util.Collection;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.WorldBorder;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitTask;
 
 import fr.dpocean.UHCPlugin;
+import fr.dpocean.tasks.MessageTask;
+import fr.dpocean.tasks.PVPSeconds;
+import fr.dpocean.tasks.PVPTask;
+import fr.dpocean.tasks.StopGame;
+import fr.dpocean.tasks.WorldBorderTask;
 
 public class UHCScheduler {
     private UHCPlugin plugin;
@@ -19,22 +20,14 @@ public class UHCScheduler {
         this.plugin = plugin;
     }
 
-    public void pvpScheduler(BukkitScheduler scheduler) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                Bukkit.getWorld(plugin.getConfig().getConfigurationSection("worlds").getString("uhc")).setPVP(true);
-                Bukkit.broadcastMessage("PVP IS NOW ACTIVE!");
-            }
-        }.runTaskLater(plugin, plugin.getConfig().getConfigurationSection("timers").getInt("pvpactivate"));
-        
-        scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
-            @Override
-            public void run() {
-                World world = Bukkit.getWorld(plugin.getConfig().getConfigurationSection("worlds").getString("uhc"));
-                WorldBorder wb = world.getWorldBorder();
-                wb.setSize(wb.getSize() - 1);
-            }
-        }, plugin.getConfig().getConfigurationSection("timers").getInt("pvpactivate"), 20);
+    public void pvpScheduler() {
+        new PVPTask(plugin).runTaskTimer(plugin, 0, 20 * 60 * 5);
+        new MessageTask(plugin, ChatColor.RED, "PVP start in 1 minute!").runTaskLater(plugin, 20 * 60 * 19);
+        new PVPSeconds(plugin).runTaskTimer(plugin, 20 * 60 * 19 + 20 * 30, 20);
+        new WorldBorderTask(plugin).runTaskTimer(plugin, 20 * 60 * 20, 20);
+    }
+
+    public void stopGameLater() {
+        new StopGame(plugin).runTaskLater(plugin, 20 * 30);
     }
 }

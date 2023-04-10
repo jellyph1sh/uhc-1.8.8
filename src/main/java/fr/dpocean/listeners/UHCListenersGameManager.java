@@ -1,6 +1,7 @@
 package fr.dpocean.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -9,9 +10,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitScheduler;
 
 import fr.dpocean.UHCPlugin;
+import fr.dpocean.tasks.RestartGame;
 
 public class UHCListenersGameManager implements Listener {
     private UHCPlugin plugin;
@@ -24,20 +25,14 @@ public class UHCListenersGameManager implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (event.getPlayer() instanceof Player) {
             if (!plugin.isGame) {
-                if (Bukkit.getOnlinePlayers().size() >= plugin.getConfig().getInt("start-game") && plugin.restartTask == null) {
-                    Bukkit.broadcastMessage("A game start in 1 minute!");
-                    BukkitScheduler scheduler = plugin.getServer().getScheduler();
-                    plugin.restartTask = scheduler.runTaskLater(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            Bukkit.broadcastMessage("A game is starting!");
-                            plugin.startGame();
-                            plugin.restartTask = null;
-                        }
-                    }, 20*60);
+                if (Bukkit.getOnlinePlayers().size() >= plugin.getConfig().getInt("start-game") && !plugin.isGame && plugin.restartTask == null) {
+                    plugin.broadcastMessage(ChatColor.YELLOW, "A new game start in 1 minute!");
+                    plugin.restartTask = new RestartGame(plugin).runTaskLater(plugin, 20*60);
                 }
-                Bukkit.broadcastMessage("There is " + Bukkit.getOnlinePlayers().size() + " players connected!");
+                event.setJoinMessage(ChatColor.GREEN + event.getPlayer().getDisplayName() + " has join the server!");
+                plugin.broadcastMessage(ChatColor.YELLOW, "There is " + Bukkit.getOnlinePlayers().size() + " players connected!");
             } else {
+                event.setJoinMessage(ChatColor.YELLOW + event.getPlayer().getDisplayName() + " has join the game as spectator!");
                 event.getPlayer().setGameMode(GameMode.SPECTATOR);
             }
         }
@@ -47,17 +42,22 @@ public class UHCListenersGameManager implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (event.getPlayer() instanceof Player) {
             if (plugin.isGame) {
+                event.setQuitMessage(ChatColor.RED + event.getPlayer().getDisplayName() + " has left the game!");
                 plugin.players.remove(event.getPlayer());
                 if (plugin.players.size() <= 1) {
-                    plugin.stopGame();
+                    plugin.broadcastMessage(ChatColor.GOLD, "The winner is " + plugin.players.get(0) + "!");
+                    plugin.stopGameLater();
                 }
+            } else {
+                event.setQuitMessage(ChatColor.RED + event.getPlayer().getDisplayName() + " has left the server!");
+                if (Bukkit.getOnlinePlayers().size() - 1 < plugin.getConfig().getInt("start-game") && plugin.restartTask != null) {
+                    plugin.restartTask.cancel();
+                    plugin.restartTask = null;
+                    plugin.broadcastMessage(ChatColor.RED, "The automatic game starter has been cancel!");
+                    plugin.broadcastMessage(ChatColor.RED, "Insufficient players!");
+                }
+                plugin.broadcastMessage(ChatColor.YELLOW, "There is " + (Bukkit.getOnlinePlayers().size() - 1) + " players connected!");
             }
-            if (Bukkit.getOnlinePlayers().size() - 1 < plugin.getConfig().getInt("start-game") && plugin.restartTask != null) {
-                plugin.restartTask.cancel();
-                plugin.restartTask = null;
-                Bukkit.broadcastMessage("The game start has been cancel!");
-            }
-            Bukkit.broadcastMessage("There is " + (Bukkit.getOnlinePlayers().size() - 1) + " players connected!");
         }
     }
 
@@ -67,25 +67,12 @@ public class UHCListenersGameManager implements Listener {
             Player ply = (Player) event.getEntity();
             Location deathLocation = ply.getLocation();
             ply.spigot().respawn();
+            ply.teleport(deathLocation);
+            ply.setGameMode(GameMode.SPECTATOR);
             plugin.players.remove(ply);
             if (plugin.players.size() <= 1) {
-                if (plugin.stopGame()) {
-                    if (Bukkit.getOnlinePlayers().size() >= plugin.getConfig().getInt("start-game") && !plugin.isGame && plugin.restartTask == null) {
-                        Bukkit.broadcastMessage("A game start in 1 minute!");
-                        BukkitScheduler scheduler = plugin.getServer().getScheduler();
-                        plugin.restartTask = scheduler.runTaskLater(plugin, new Runnable() {
-                            @Override
-                            public void run() {
-                                Bukkit.broadcastMessage("A game is starting!");
-                                plugin.startGame();
-                                plugin.restartTask = null;
-                            }
-                        }, 20*60);
-                    }
-                }
-            } else {
-                ply.teleport(deathLocation);
-                ply.setGameMode(GameMode.SPECTATOR);
+                plugin.broadcastMessage(ChatColor.GOLD, "The winner is " + plugin.players.get(0).getDisplayName() + "!");
+                plugin.stopGameLater();
             }
         }
     }

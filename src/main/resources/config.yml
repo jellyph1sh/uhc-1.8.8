@@ -1,6 +1,7 @@
 worlds:
   lobby: world
   uhc: uhc
+prefix: "[DPUHC]"
 start-game: 2
 border-limit: 500
 timers:
