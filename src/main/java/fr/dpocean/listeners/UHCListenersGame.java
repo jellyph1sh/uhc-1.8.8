@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Animals;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -86,6 +87,9 @@ public class UHCListenersGame implements Listener {
     @EventHandler
     public void onPlayerKillAnimals(EntityDeathEvent event) {
         if (plugin.isGame) {
+            if ((Player) event.getEntity() instanceof Player) {
+                return;
+            }
             if ((Animals) event.getEntity() instanceof Animals) {
                 Animals animal = (Animals) event.getEntity();
                 event.getDrops().clear();
