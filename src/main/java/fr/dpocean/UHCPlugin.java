@@ -18,13 +18,17 @@ import fr.dpocean.listeners.UHCListenersGameManager;
 import fr.dpocean.listeners.UHCListenersLobby;
 import fr.dpocean.schedulers.UHCScheduler;
 import fr.dpocean.tasks.RestartGame;
+import fr.dpocean.tasks.RestartGameSeconds;
 
 public class UHCPlugin extends JavaPlugin {
     public boolean isGame = false;
     public BukkitTask restartTask = null;
+    public BukkitTask restartTaskSeconds = null;
     public List<Player> players = null;
     private UHCScheduler scheduler;
     public String messagePrefix;
+    public ScoreboardUHC scoreboard;
+    private TeleportUtils teleportUtils;
 
     public void Log(String msg) {
         getLogger().info(msg);
@@ -42,12 +46,15 @@ public class UHCPlugin extends JavaPlugin {
         this.messagePrefix = ChatColor.BLUE + getConfig().getString("prefix") + " ";
         Log("Config loaded!");
 
+        this.teleportUtils = new TeleportUtils(this);
+
         Log("Loading commands!");
         this.getCommand("uhcstart").setExecutor(new UHCStart(this));
         this.getCommand("uhcstop").setExecutor(new UHCStop(this));
         Log("Commands loaded!");
 
         Log("Loading listeners!");
+        //this.scoreboard = new ScoreboardUHC(this);
         getServer().getPluginManager().registerEvents(new UHCListenersGameManager(this), this);
         getServer().getPluginManager().registerEvents(new UHCListenersLobby(this), this);
         getServer().getPluginManager().registerEvents(new UHCListenersGame(this), this);
@@ -68,7 +75,7 @@ public class UHCPlugin extends JavaPlugin {
         WorldUtils.setUHCWorldParameters(uhcWorld);
         Bukkit.unloadWorld(Bukkit.getWorld(worlds.getString("lobby")), false);
         this.players = Bukkit.getWorld(worlds.getString("lobby")).getPlayers();
-        TeleportUtils.teleportUHCAllPlayers(players, uhcWorld.getName(), getConfig().getInt("border-limit"));
+        teleportUtils.teleportUHCAllPlayers(players, uhcWorld.getName(), getConfig().getInt("border-limit"));
         isGame = true;
         broadcastMessage(ChatColor.GREEN, "Game started! GOOD LUCK!");
         scheduler.pvpScheduler();
@@ -85,14 +92,15 @@ public class UHCPlugin extends JavaPlugin {
         if (worldUhc == null) {
             return ;
         }
-        TeleportUtils.teleportLobbyAllPlayers(worlds.getString("lobby"));
+        teleportUtils.teleportLobbyAllPlayers(worlds.getString("lobby"));
         this.players = null;
         Bukkit.unloadWorld(worldUhc, false);
         File worldFile = worldUhc.getWorldFolder();
         WorldUtils.deleteWorld(worldFile);
         isGame = false;
         if (Bukkit.getOnlinePlayers().size() >= getConfig().getInt("start-game") && !isGame && restartTask == null) {
-            broadcastMessage(ChatColor.YELLOW, "A new game start in 1 minute!");
+            broadcastMessage(ChatColor.YELLOW, "A new game will start in 1 minute!");
+            this.restartTaskSeconds = new RestartGameSeconds(this).runTaskTimer(this, 20*50, 20);
             this.restartTask = new RestartGame(this).runTaskLater(this, 20*60);
         }
     }

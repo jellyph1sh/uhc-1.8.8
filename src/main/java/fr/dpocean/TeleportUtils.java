@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -15,16 +16,26 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-public class TeleportUtils {
+import fr.dpocean.tasks.MPMessage;
 
-    public static void teleportUHCAllPlayers(List<Player> players, String uhcName, int limit) {
+public class TeleportUtils {
+    private UHCPlugin plugin;
+
+    public TeleportUtils(UHCPlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    public void teleportUHCAllPlayers(List<Player> players, String uhcName, int limit) {
         for (Player player : players) {
+            player.sendMessage(ChatColor.YELLOW + "You are now invincible for 30 seconds!");
+            new MPMessage(player).runTaskLater(plugin, 20 * 30);
+            player.setNoDamageTicks(20 * 30);
             player.teleport(generateLocation(Bukkit.getWorld(uhcName), player, limit));
             player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 1, false, false));
         }
     }
 
-    public static void teleportLobbyAllPlayers(String worldName) {
+    public void teleportLobbyAllPlayers(String worldName) {
         Collection<? extends Player> players = Bukkit.getOnlinePlayers();
         for (Player player : players) {
             player.teleport(Bukkit.getWorld(worldName).getSpawnLocation());
@@ -37,9 +48,9 @@ public class TeleportUtils {
         }
     }
 
-    public static HashSet<Material> badBlocks = new HashSet<Material>();
+    public HashSet<Material> badBlocks = new HashSet<Material>();
 
-    static {
+    {
         badBlocks.add(Material.LAVA);
         badBlocks.add(Material.FIRE);
         badBlocks.add(Material.STONE);
@@ -50,7 +61,7 @@ public class TeleportUtils {
         badBlocks.add(Material.GRAVEL);
     }
 
-    public static Location generateLocation(World world, Player player, int limit) {
+    public Location generateLocation(World world, Player player, int limit) {
         Random random = new Random();
         int x = random.nextInt(limit/2-1), y = 150, z = random.nextInt(limit/2-1);
         Location randomLocation = new Location(world, x, y, z);
@@ -63,13 +74,15 @@ public class TeleportUtils {
             z = random.nextInt(limit/2-1);
             randomLocation = new Location(world, x, y, z);
 
-            randomLocation.setY(randomLocation.getWorld().getHighestBlockYAt(randomLocation) + 3);
+            randomLocation.setY(randomLocation.getWorld().getHighestBlockYAt(randomLocation));
         }
+
+        randomLocation.setY(150);
 
         return randomLocation;
     }
 
-    public static boolean isLocationSafe(Location location) {
+    public boolean isLocationSafe(Location location) {
         int x = location.getBlockX(), y = location.getBlockY(), z = location.getBlockZ();
 
         Block block = location.getWorld().getBlockAt(x, y, z);

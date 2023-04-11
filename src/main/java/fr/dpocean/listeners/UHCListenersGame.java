@@ -87,7 +87,7 @@ public class UHCListenersGame implements Listener {
     @EventHandler
     public void onPlayerKillAnimals(EntityDeathEvent event) {
         if (plugin.isGame) {
-            if ((Player) event.getEntity() instanceof Player) {
+            if (event.getEntity() instanceof Player) {
                 return;
             }
             if ((Animals) event.getEntity() instanceof Animals) {
